@@ -124,10 +124,17 @@
     }
 
     // Unlock all audio elements on first user tap (iOS requirement)
+    // Play each at volume 0, let it play for a frame, then pause and reset
+    let audioUnlocked = false;
     function unlockAudio() {
+      if (audioUnlocked) return;
+      audioUnlocked = true;
       [startSound, endSound, endSound2, endSound3, endScrimSound, leadSound].forEach(s => {
+        const vol = s.volume;
         s.volume = 0;
-        s.play().then(() => { s.pause(); s.currentTime = 0; s.volume = 1; }).catch(() => { s.volume = 1; });
+        s.play().then(() => {
+          setTimeout(() => { s.pause(); s.currentTime = 0; s.volume = vol; }, 1);
+        }).catch(() => { s.volume = vol; });
       });
       document.removeEventListener('touchstart', unlockAudio);
       document.removeEventListener('click', unlockAudio);
