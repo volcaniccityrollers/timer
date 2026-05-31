@@ -194,8 +194,9 @@
       startBtn.disabled = true;
       statusEl.textContent = 'Five seconds...';
 
-      // Unlock start sound now (user gesture) so it can play after 5s delay
+      // Unlock sounds now (user gesture) so they can play after delays
       unlockSound(startSound);
+      unlockSound(endSound);
       requestWakeLock();
       speak('Five seconds');
       let countdown = 5;
