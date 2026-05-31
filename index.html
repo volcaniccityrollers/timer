@@ -242,14 +242,14 @@
       timerEl.classList.add('ended');
       // Play end jam sound 3 times with fixed timing
       playSound(endSound);
-      setTimeout(() => playSound(endSound2), 1050);
-      setTimeout(() => playSound(endSound3), 2100);
+      setTimeout(() => playSound(endSound2), 1200);
+      setTimeout(() => playSound(endSound3), 2400);
 
       releaseWakeLock();
       setTimeout(() => {
         startBtn.disabled = false;
         resetBtn.disabled = false;
-      }, 1500);
+      }, 3600);
     }
 
     function reset() {
