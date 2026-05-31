@@ -123,24 +123,15 @@
       sound.play();
     }
 
-    // Unlock all audio elements on first user tap (iOS requirement)
-    // Play each at volume 0, let it play for a frame, then pause and reset
-    let audioUnlocked = false;
-    function unlockAudio() {
-      if (audioUnlocked) return;
-      audioUnlocked = true;
-      [startSound, endSound, endSound2, endSound3, endScrimSound, leadSound].forEach(s => {
-        const vol = s.volume;
-        s.volume = 0;
-        s.play().then(() => {
-          setTimeout(() => { s.pause(); s.currentTime = 0; s.volume = vol; }, 1);
-        }).catch(() => { s.volume = vol; });
-      });
-      document.removeEventListener('touchstart', unlockAudio);
-      document.removeEventListener('click', unlockAudio);
+    // Unlock a single audio element (iOS requires play() during user gesture)
+    function unlockSound(sound) {
+      sound.volume = 0;
+      sound.play().then(() => {
+        sound.pause();
+        sound.currentTime = 0;
+        sound.volume = 1;
+      }).catch(() => { sound.volume = 1; });
     }
-    document.addEventListener('touchstart', unlockAudio);
-    document.addEventListener('click', unlockAudio);
 
     // Wake lock to prevent screen sleeping during jams
     let wakeLock = null;
@@ -184,6 +175,8 @@
       startBtn.disabled = true;
       statusEl.textContent = 'Five seconds...';
 
+      // Unlock start sound now (user gesture) so it can play after 5s delay
+      unlockSound(startSound);
       requestWakeLock();
       speak('Five seconds');
       let countdown = 5;
