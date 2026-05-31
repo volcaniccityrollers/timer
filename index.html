@@ -88,7 +88,7 @@
   <div class="status" id="status"></div>
   <div class="buttons">
     <button id="startBtn">Start Jam</button>
-    <button id="endBtn" disabled>End Jam</button>
+    <button id="endBtn">End Jam</button>
     <button id="resetBtn">Reset</button>
   </div>
 
@@ -258,7 +258,6 @@
       ensureAudio();
 
       startBtn.disabled = true;
-      endBtn.disabled = true;
       statusEl.textContent = 'Five seconds...';
 
       requestWakeLock();
@@ -283,7 +282,6 @@
       statusEl.textContent = 'Jam in progress';
       timerEl.classList.add('running');
       timerEl.classList.remove('ended');
-      endBtn.disabled = false;
       resetBtn.disabled = false;
 
       const startTime = performance.now();
@@ -301,7 +299,6 @@
       ensureAudio();
       clearInterval(jamInterval);
       jamInterval = null;
-      endBtn.disabled = true;
       statusEl.textContent = auto ? 'Jam ended (2:00)' : 'Jam called off';
       timerEl.textContent = '0:00';
       timerEl.classList.remove('running');
@@ -326,7 +323,6 @@
       statusEl.textContent = '';
       timerEl.classList.remove('running', 'ended');
       startBtn.disabled = false;
-      endBtn.disabled = true;
       resetBtn.disabled = false;
       releaseWakeLock();
     }
