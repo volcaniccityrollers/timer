@@ -126,7 +126,8 @@
     // Unlock all audio elements on first user tap (iOS requirement)
     function unlockAudio() {
       [startSound, endSound, endSound2, endSound3, endScrimSound, leadSound].forEach(s => {
-        s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(() => {});
+        s.volume = 0;
+        s.play().then(() => { s.pause(); s.currentTime = 0; s.volume = 1; }).catch(() => { s.volume = 1; });
       });
       document.removeEventListener('touchstart', unlockAudio);
       document.removeEventListener('click', unlockAudio);
