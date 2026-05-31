@@ -79,7 +79,7 @@
     button:disabled { opacity: 0.3; cursor: not-allowed; }
     #startBtn { background: #f3c019; color: #2e2d32; }
     #endBtn { background: #ec2026; color: #fff; }
-    #resetBtn { background: #e3cdb6; color: #2e2d32; }
+    #resetBtn { background: #e3cdb6; color: #2e2d32; opacity: 1 !important; }
   </style>
 </head>
 <body>
@@ -100,6 +100,7 @@
     const resetBtn = document.getElementById('resetBtn');
 
     let jamInterval = null;
+    let countdownInterval = null;
     let jamTimeMs = 0;
     const JAM_DURATION = 120000; // 2 minutes
 
@@ -252,7 +253,6 @@
 
       startBtn.disabled = true;
       endBtn.disabled = true;
-      resetBtn.disabled = true;
       statusEl.textContent = 'Five seconds...';
 
       requestWakeLock();
@@ -260,7 +260,7 @@
       let countdown = 5;
       timerEl.textContent = '0:05';
       statusEl.textContent = 'Five seconds...';
-      const countdownInterval = setInterval(() => {
+      countdownInterval = setInterval(() => {
         countdown--;
         if (countdown > 0) {
           timerEl.textContent = `0:0${countdown}`;
@@ -311,7 +311,10 @@
 
     function reset() {
       clearInterval(jamInterval);
+      clearInterval(countdownInterval);
       jamInterval = null;
+      countdownInterval = null;
+      speechSynthesis.cancel();
       jamTimeMs = 0;
       updateDisplay();
       statusEl.textContent = '';
