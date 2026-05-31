@@ -37,7 +37,7 @@
     }
     .logo img {
       width: 100%;
-      height: 3.5rem;
+      height: 5rem;
       object-fit: cover;
       object-position: top center;
       opacity: 0.5;
@@ -240,10 +240,12 @@
       timerEl.textContent = '0:00';
       timerEl.classList.remove('running');
       timerEl.classList.add('ended');
-      // Play end jam sound 3 times with fixed timing
+      // Play end jam sound 3 times - unlock all on tap then play with timing
+      unlockSound(endSound2);
+      unlockSound(endSound3);
       playSound(endSound);
-      setTimeout(() => playSound(endSound2), 1200);
-      setTimeout(() => playSound(endSound3), 2400);
+      setTimeout(() => playSound(endSound2), 1100);
+      setTimeout(() => playSound(endSound3), 2200);
 
       releaseWakeLock();
       setTimeout(() => {
