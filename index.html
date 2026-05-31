@@ -108,6 +108,12 @@
     function ensureAudio() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // Play a silent buffer to unlock audio on iOS (even on silent mode)
+        const silence = audioCtx.createBuffer(1, 1, 22050);
+        const source = audioCtx.createBufferSource();
+        source.buffer = silence;
+        source.connect(audioCtx.destination);
+        source.start();
       }
       if (audioCtx.state === 'suspended') audioCtx.resume();
     }
