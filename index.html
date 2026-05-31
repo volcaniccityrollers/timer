@@ -128,28 +128,89 @@
     function playWhistle(duration = 1.0) {
       const t = audioCtx.currentTime;
 
-      // Simple but loud dual-tone whistle that works on iOS
-      const gain = audioCtx.createGain();
-      gain.gain.value = 0.6;
-      gain.connect(audioCtx.destination);
+      // Fox 40-style dual-chamber frequencies
+      const freqs = [3200, 3800];
 
-      // Two tones for Fox 40 dual-chamber effect
-      const osc1 = audioCtx.createOscillator();
-      osc1.type = 'square';
-      osc1.frequency.value = 3200;
-      osc1.connect(gain);
-      osc1.start(t);
-      osc1.stop(t + duration);
+      // Master output with compression to make it loud and cutting
+      const compressor = audioCtx.createDynamicsCompressor();
+      compressor.threshold.setValueAtTime(-6, t);
+      compressor.knee.setValueAtTime(3, t);
+      compressor.ratio.setValueAtTime(8, t);
+      compressor.attack.setValueAtTime(0.001, t);
+      compressor.release.setValueAtTime(0.05, t);
+      compressor.connect(audioCtx.destination);
 
-      const osc2 = audioCtx.createOscillator();
-      osc2.type = 'square';
-      osc2.frequency.value = 3800;
-      const gain2 = audioCtx.createGain();
-      gain2.gain.value = 0.4;
-      osc2.connect(gain2);
-      gain2.connect(audioCtx.destination);
-      osc2.start(t);
-      osc2.stop(t + duration);
+      // Master gain — hard attack, sustain, then drop
+      const master = audioCtx.createGain();
+      const attack = 0.005;
+      const release = Math.min(0.04, duration * 0.3);
+      master.gain.setValueAtTime(0.0, t);
+      master.gain.linearRampToValueAtTime(0.7, t + attack);
+      master.gain.setValueAtTime(0.7, t + duration - release);
+      master.gain.linearRampToValueAtTime(0.0, t + duration);
+      master.connect(compressor);
+
+      // Two resonant chambers (like a Fox 40 has dual tone holes)
+      freqs.forEach(freq => {
+        // Main tone
+        const osc = audioCtx.createOscillator();
+        osc.type = 'sine';
+        // Initial chirp — pitch bends down slightly as air stabilises
+        osc.frequency.setValueAtTime(freq * 1.08, t);
+        osc.frequency.exponentialRampToValueAtTime(freq, t + 0.04);
+
+        // Pea rattle modulation (different rate per chamber = realistic beating)
+        const lfo = audioCtx.createOscillator();
+        lfo.frequency.setValueAtTime(freq === 3200 ? 26 : 33, t);
+        const lfoGain = audioCtx.createGain();
+        lfoGain.gain.setValueAtTime(120, t); // deep modulation
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc.frequency);
+
+        // Odd harmonics for edge/bite
+        const osc2 = audioCtx.createOscillator();
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(freq * 3, t); // 3rd harmonic
+
+        const g1 = audioCtx.createGain();
+        g1.gain.setValueAtTime(0.35, t);
+        const g2 = audioCtx.createGain();
+        g2.gain.setValueAtTime(0.08, t);
+
+        osc.connect(g1);
+        osc2.connect(g2);
+        g1.connect(master);
+        g2.connect(master);
+
+        osc.start(t); osc.stop(t + duration);
+        osc2.start(t); osc2.stop(t + duration);
+        lfo.start(t); lfo.stop(t + duration);
+      });
+
+      // Turbulent air noise — heavier than before
+      const bufferSize = audioCtx.sampleRate * duration;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = noiseBuffer;
+
+      // Two bandpass filters at each chamber freq for resonant noise
+      const bp1 = audioCtx.createBiquadFilter();
+      bp1.type = 'bandpass'; bp1.frequency.value = 3200; bp1.Q.value = 6;
+      const bp2 = audioCtx.createBiquadFilter();
+      bp2.type = 'bandpass'; bp2.frequency.value = 3800; bp2.Q.value = 6;
+
+      const noiseGain = audioCtx.createGain();
+      noiseGain.gain.setValueAtTime(0.18, t);
+
+      noise.connect(bp1);
+      noise.connect(bp2);
+      bp1.connect(noiseGain);
+      bp2.connect(noiseGain);
+      noiseGain.connect(master);
+
+      noise.start(t); noise.stop(t + duration);
     }
 
     function playShortBlasts() {
