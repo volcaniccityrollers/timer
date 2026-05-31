@@ -103,7 +103,13 @@
     let jamTimeMs = 0;
     const JAM_DURATION = 120000; // 2 minutes
 
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let audioCtx;
+    function ensureAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
 
     // Wake lock to prevent screen sleeping during jams
     let wakeLock = null;
@@ -242,7 +248,7 @@
       jamTimeMs = 0;
       updateDisplay();
 
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+      ensureAudio();
 
       startBtn.disabled = true;
       endBtn.disabled = true;
@@ -286,6 +292,7 @@
     }
 
     function endJam(auto = false) {
+      ensureAudio();
       clearInterval(jamInterval);
       jamInterval = null;
       endBtn.disabled = true;
